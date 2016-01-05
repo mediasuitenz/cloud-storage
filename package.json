@@ -1,5 +1,5 @@
 {
-  "name": "cloud-storage",
+  "name": "@mediasuite/cloud-storage",
   "description": "upload and download files from various providers",
   "version": "0.0.0",
   "license": "MIT",
@@ -44,7 +44,10 @@
     "upload",
     "download"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "pkgcloud": "^1.1.0",
+    "ramda": "^0.19.1"
+  },
   "devDependencies": {
     "chai": "^3.4.1",
     "mocha": "^2.3.4",
