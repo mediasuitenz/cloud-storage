@@ -3,14 +3,10 @@
 const R = require('ramda')
 const pkgcloudTypes = ['amazon', 'rackspace', 'azure', 'google', 'hp', 'openstack']
 
-module.exports = () => {
-  return {
-    create(config) {
-      let type = config.adapter.provider
-      if (R.contains(pkgcloudTypes, type)) {
-        type = 'pkgcloud'
-      }
-      return require(`./adapter-${type}.js`)(config.adapter)
-    }
+module.exports.create = adapterConfig => {
+  let type = adapterConfig.provider
+  if (R.contains(type, pkgcloudTypes)) {
+    type = 'pkgcloud'
   }
+  return require(`./adapter-${type}.js`)(adapterConfig)
 }

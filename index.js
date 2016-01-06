@@ -1,40 +1,44 @@
+'use strict'
+
 // module usage looks something like:
 //
-// storage(config).upload('my-file.png', req.body).then(cb)
+// storage(config).upload('my-file.png', req.body, options).then(cb)
 //
-// storage(config).download('my-file.png').then(cb)
+// storage(config).download('my-file.png', options).then(cb)
 
 const R = require('ramda')
 const adapter = require('./adapter')
-
-function cacheFile () {
-  // implement me (return a promise)
-}
+const fileCache = require('./file-cache')
 
 module.exports = config => {
   const defaults = {
     adapter: {
       provider: 'filesystem',
-      path: ''
+      path: __dirname
     },
     cache: {
-      ttl: ''
-      enable: false
+      ttl: '',
+      enable: false,
+      path: ''
     }
   }
 
   config = R.merge(defaults, config)
 
   const client = adapter.create(config.adapter)
+  const cache = fileCache.create(config.cache)
 
   return {
-    upload: (name, data) => {
-      return client.upload(name, data)
-        .then(cacheFile)
+    upload (name, data, options) {
+      options = options || {}
+      return client.upload(name, data, options).then(cache.put(name, data))
     },
-    download: name => {
-      return getFromCache(name)
-        .catch(() => client.download(name).then(cacheFile))
+    download (name, options) {
+      options = options || {}
+      return cache.get(name, options)
+        .catch(() => client.download(name).then(data => {
+          return cache.put(name, data).then(() => data)
+        }))
     }
   }
 }
