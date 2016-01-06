@@ -23,7 +23,7 @@
   "scripts": {
     "lint": "standard --verbose | snazzy",
     "pretest": "npm run lint",
-    "test:ci": "mocha --ui mocha-given -R spec test",
+    "test:ci": "mocha -R spec test",
     "test:dev": "testem .",
     "test": "npm run test:ci",
     "prepublish": "npm test && npm prune",
@@ -52,7 +52,6 @@
   "devDependencies": {
     "chai": "^3.4.1",
     "mocha": "^2.3.4",
-    "mocha-given": "^0.1.3",
     "snazzy": "^2.0.1",
     "standard": "^5.4.1",
     "testem": "^0.9.11",

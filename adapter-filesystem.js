@@ -29,7 +29,7 @@ module.exports = config => {
     },
     download (name, options) {
       return new Promise((resolve, reject) => {
-        let stream = fs.readFileStream(`${normalizedPath}${name}`)
+        let stream = fs.createReadStream(`${normalizedPath}${name}`)
 
         switch (options.type) {
           case 'buffer':
