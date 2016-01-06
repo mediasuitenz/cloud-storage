@@ -79,6 +79,17 @@ storage(config).download('my-file.png')
   })
 ```
 
+#### download options
+
+By default the download promise will resolve with a stream object. If you would
+prefer, you can instead get back a full buffer of the file like so:
+
+```js
+let promise = storage(config).download('my-file.png', {
+  type: 'buffer'
+})
+```
+
 ## Providers
 
 Supports any providers supported by package cloud. See [pgkcloud storage](https://www.npmjs.com/package/pkgcloud#storage) for more details.
