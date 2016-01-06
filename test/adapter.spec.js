@@ -12,10 +12,12 @@ describe('adapter', function () {
     expect(client.name).to.equal('filesystem')
   })
 
-  it('should dynamically loading pkgcloud adapter via provider name', () => {
+  it('should dynamically loading pkgcloud adapter via provider name', function (done) {
+    this.timeout(5000)
     let config = { provider: 'amazon' }
     let client = adapter.create(config)
     expect(client.name).to.equal('pkgcloud')
+    done()
   })
 
   it('should dynamically loading pkgcloud adapter via provider name', () => {

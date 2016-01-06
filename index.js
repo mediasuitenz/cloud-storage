@@ -30,7 +30,7 @@ module.exports = config => {
     download (name, options) {
       options = options || {}
       return cache.get(name, options)
-        .catch(() => client.download(name).then(data => {
+        .catch(() => client.download(name, options).then(data => {
           return cache.put(name, data).then(() => data)
         }))
     }
