@@ -1,6 +1,6 @@
 'use strict'
 
-const pkgcloud = require('pkgcloud')
+let pkgcloud = require('pkgcloud')
 const Readable = require('stream').Readable
 
 module.exports = config => {
