@@ -10,9 +10,8 @@ module.exports = config => {
   let normalizedPath = path.normalize(`${storagePath}/`)
 
   return {
+    name: 'filesystem',
     upload (name, data, options) {
-      options = options || {}
-
       return new Promise((resolve, reject) => {
         let writeStream = fs.createWriteStream(`${normalizedPath}${name}`)
 
@@ -22,10 +21,10 @@ module.exports = config => {
           stream.push(null)
         }
 
-        stream.pipe(writeStream)
         stream.on('error', err => reject(err))
-        writeStream.on('success', () => resolve())
+        writeStream.on('finish', () => resolve())
         writeStream.on('error', err => reject(err))
+        stream.pipe(writeStream)
       })
     },
     download (name, options) {

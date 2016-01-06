@@ -8,7 +8,7 @@ module.exports = config => {
   const defaults = {
     adapter: {
       provider: 'filesystem',
-      path: __dirname
+      path: process.cwd()
     },
     cache: {
       ttl: '',

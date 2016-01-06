@@ -7,6 +7,7 @@ module.exports = config => {
   const client = pkgcloud.storage.createClient(config)
 
   return {
+    name: 'pkgcloud',
     upload (name, data, options) {
       return new Promise((resolve, reject) => {
         let writeStream = client.upload({
