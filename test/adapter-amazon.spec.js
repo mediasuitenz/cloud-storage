@@ -6,30 +6,26 @@ const expect = require('chai').expect
 const fs = require('fs')
 const cp = require('child_process')
 const rewire = require('rewire')
-let adapter = rewire('../adapter-pkgcloud')
+let adapter = rewire('../adapter-amazon')
 
-const pkgcloud = {
-  storage: {
-    createClient: () => {
-      return {
-        upload (options) {
-          let writeStream = fs.createWriteStream(`${__dirname}/files/${options.remote}`)
-          writeStream.on('finish', () => {
-            writeStream.emit('success')
-          })
-          return writeStream
-        },
-        download (options) {
-          return fs.createReadStream(`${__dirname}/files/${options.remote}`)
-        }
-      }
+const AWS = {
+  S3: function () {
+    this.upload = (params, cb) => {
+      fs.writeFileSync(`${__dirname}/files/${params.Key}`, params.Body)
+      cb(null, 'success')
+    }
+    this.getObject = (params, cb) => {
+      cb(null, fs.createReadStream(`${__dirname}/files/${params.Key}`))
+    }
+    this.getSignedUrl = (operation, params, cb) => {
+      cb(null, 'http://sub.domain.tld/path/to/file')
     }
   }
 }
 
-adapter.__set__('pkgcloud', pkgcloud)
+adapter.__set__('AWS', AWS)
 
-describe('pkgcloud adapter', () => {
+describe('amazon adapter', () => {
   describe('uploading a file', () => {
     beforeEach(() => {
       cp.execSync(`rm -rf ${__dirname}/files`)
@@ -41,7 +37,7 @@ describe('pkgcloud adapter', () => {
     })
     it('upload should successfully upload a file', (done) => {
       // given
-      let config = { provider: 'rackspace', path: `${__dirname}/files` }
+      let config = { provider: 'amazon', container: `${__dirname}/files` }
       let client = adapter(config)
 
       // when
@@ -68,9 +64,10 @@ describe('pkgcloud adapter', () => {
     afterEach(() => {
       cp.execSync(`rm -rf ${__dirname}/files`)
     })
+
     it('download should successfully download a file', (done) => {
       // given
-      let config = { provider: 'rackspace', container: 'dummy' }
+      let config = { provider: 'amazon', container: 'dummy' }
       let client = adapter(config)
 
       // when
@@ -89,18 +86,20 @@ describe('pkgcloud adapter', () => {
         done()
       })
     })
+  })
 
-    it('setting type option to buffer should download whole file buffer', (done) => {
+  describe('getting a signed url', () => {
+    it('should return a promise that resolves to a url', (done) => {
       // given
-      let config = { provider: 'rackspace', path: `dummy` }
+      let config = { provider: 'amazon', container: 'dummy' }
       let client = adapter(config)
 
       // when
-      let download = client.download('my-file.txt', { type: 'buffer' })
+      let url = client.getUrl('my-file.txt', {})
 
       // then
-      download.then(fileBuffer => {
-        expect(fileBuffer.toString()).to.equal('asdasdasd\n')
+      url.then(url => {
+        expect(url).to.equal('http://sub.domain.tld/path/to/file')
         done()
       }).catch(() => {
         expect(false).to.be.ok
