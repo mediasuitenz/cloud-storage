@@ -33,6 +33,10 @@ module.exports = config => {
         .catch(() => client.download(name, options).then(data => {
           return cache.put(name, data).then(() => data)
         }))
+    },
+    getUrl (name, options) {
+      options = options || {}
+      return client.getUrl(name, options)
     }
   }
 }

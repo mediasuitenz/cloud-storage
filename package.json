@@ -46,6 +46,7 @@
     "download"
   ],
   "dependencies": {
+    "aws-sdk": "^2.2.28",
     "pkgcloud": "^1.1.0",
     "ramda": "^0.19.1"
   },

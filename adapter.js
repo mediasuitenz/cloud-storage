@@ -1,7 +1,7 @@
 'use strict'
 
 const R = require('ramda')
-const pkgcloudTypes = ['amazon', 'rackspace', 'azure', 'google', 'hp', 'openstack']
+const pkgcloudTypes = ['rackspace', 'azure', 'google', 'hp', 'openstack']
 
 module.exports.create = adapterConfig => {
   let type = adapterConfig.provider
