@@ -30,7 +30,7 @@ module.exports = config => {
     download (name, options) {
       return new Promise((resolve, reject) => {
         let stream = client.download({
-          container: 'tmp-for-all-files',
+          container: config.container,
           remote: name
         })
 
