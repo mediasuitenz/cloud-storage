@@ -3,6 +3,17 @@
 const R = require('ramda')
 const adapter = require('./adapter')
 const fileCache = require('./file-cache')
+const Stream = require('stream').Stream
+const sharp = require('sharp')
+
+const renameThumb = (name, options) => {
+  const dotIndex = name.lastIndexOf('.')
+  const dotExtension = name.slice(dotIndex)
+  const filename = name.slice(0, dotIndex)
+  const suffix = options.suffix || `@${options.width}x${options.height}`
+
+  return `${filename}${suffix}${dotExtension}`
+}
 
 module.exports = config => {
   const defaults = {
@@ -25,7 +36,28 @@ module.exports = config => {
   return {
     upload (name, data, options) {
       options = options || {}
-      return client.upload(name, data, options).then(cache.put(name, data))
+
+      const originalUpload = client.upload(name, data, options).then(cache.put(name, data))
+      const uploads = [originalUpload]
+
+      if (options.thumbnails && Array.isArray(options.thumbnails)) {
+        options.thumbnails.forEach(thumbOptions => {
+          const thumbname = renameThumb(name, thumbOptions)
+          let resizedData
+
+          if (data instanceof Stream) {
+            resizedData = data.pipe(sharp().resize(thumbOptions.width, thumbOptions.height))
+          } else {
+            resizedData = sharp(data).resize(thumbOptions.width, thumbOptions.height)
+          }
+          const uploadPromise = client.upload(thumbname, resizedData, options).then(cache.put(thumbname, resizedData))
+          uploads.push(uploadPromise)
+        })
+      }
+
+      const returnValue = Promise.all(uploads)
+
+      return (returnValue.length === 1) ? returnValue[0] : returnValue
     },
     download (name, options) {
       options = options || {}
