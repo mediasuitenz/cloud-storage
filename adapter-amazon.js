@@ -20,6 +20,7 @@ module.exports = config => {
           Key: name,
           Body: data
         }
+        Object.keys(options).forEach(key => params[key] = options[key])
         client.upload(params, (err, res) => {
           if (err) reject(err)
 
