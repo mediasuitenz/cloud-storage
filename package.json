@@ -1,7 +1,7 @@
 {
   "name": "@mediasuite/cloud-storage",
   "description": "upload and download files from various providers",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "license": "MIT",
   "main": "index.js",
   "repository": {
