@@ -3,7 +3,7 @@
 const R = require('ramda')
 const adapter = require('./adapter')
 const fileCache = require('./file-cache')
-const Stream = require('stream').Stream
+const stream = require('stream')
 const sharp = require('sharp')
 
 const renameThumb = (name, options) => {
@@ -36,17 +36,24 @@ module.exports = config => {
   return {
     upload (name, data, options) {
       options = options || {}
+      const originalData = new stream.PassThrough()
 
-      const originalUpload = client.upload(name, data, options).then(cache.put(name, data))
+      data.pipe(originalData)
+
+      const originalUpload = client.upload(name, originalData, options).then(cache.put(name, data))
       const uploads = [originalUpload]
 
+      // add check for mimetype before trying to do image processing
+
       if (options.thumbnails && Array.isArray(options.thumbnails)) {
-        options.thumbnails.forEach(thumbOptions => {
+        options.thumbnails.forEach((thumbOptions, i) => {
           const thumbname = renameThumb(name, thumbOptions)
           let resizedData
 
-          if (data instanceof Stream) {
-            resizedData = data.pipe(sharp().resize(thumbOptions.width, thumbOptions.height))
+          if (data instanceof stream.Stream) {
+            const dataCopy = new stream.PassThrough()
+            data.pipe(dataCopy)
+            resizedData = dataCopy.pipe(sharp().resize(thumbOptions.width, thumbOptions.height))
           } else {
             resizedData = sharp(data).resize(thumbOptions.width, thumbOptions.height)
           }
