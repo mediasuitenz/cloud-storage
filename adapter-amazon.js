@@ -24,6 +24,12 @@ module.exports = config => {
         client.upload(params, (err, res) => {
           if (err) reject(err)
 
+          res.ContentType = options.ContentType
+          if (/^image\/.*/.test(options.ContentType)) {
+            if (options.isThumb) res.isThumb = true
+            res.width = options.meta.width
+            res.height = options.meta.height
+          }
           resolve(res)
         })
       })
