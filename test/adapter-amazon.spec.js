@@ -12,7 +12,7 @@ const AWS = {
   S3: function () {
     this.upload = (params, cb) => {
       fs.writeFileSync(`${__dirname}/files/${params.Key}`, params.Body)
-      cb(null, 'success')
+      cb(null, {key: params.Key})
     }
     this.getObject = (params, cb) => {
       cb(null, fs.createReadStream(`${__dirname}/files/${params.Key}`))
