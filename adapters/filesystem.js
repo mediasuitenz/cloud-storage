@@ -15,7 +15,7 @@ module.exports = config => {
     upload (name, data, options) {
       return new Promise((resolve, reject) => {
         const response = {
-          Key: name,
+          key: name,
           ContentType: options.ContentType
         }
 
