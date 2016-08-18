@@ -37,6 +37,10 @@ module.exports = config => {
     upload (name, data, options) {
       options = options || {}
 
+      if (!/^image\/.*/.test(options.ContentType)) {
+        return client.upload(name, data, options).then(cache.put(name, data))
+      }
+
       let originalData, fullsize
 
       if ((data instanceof stream.Stream)) {
