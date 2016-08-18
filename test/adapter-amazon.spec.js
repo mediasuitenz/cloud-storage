@@ -6,7 +6,7 @@ const expect = require('chai').expect
 const fs = require('fs')
 const cp = require('child_process')
 const rewire = require('rewire')
-let adapter = rewire('../adapter-amazon')
+let adapter = rewire('../adapters/amazon')
 
 const AWS = {
   S3: function () {
