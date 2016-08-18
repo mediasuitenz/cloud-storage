@@ -2,7 +2,8 @@
 
 const fs = require('fs')
 const path = require('path')
-const Readable = require('stream').Readable
+const stream = require('stream')
+const Readable = stream.Readable
 
 module.exports = config => {
   // use config for setup here
@@ -13,18 +14,33 @@ module.exports = config => {
     name: 'filesystem',
     upload (name, data, options) {
       return new Promise((resolve, reject) => {
-        let writeStream = fs.createWriteStream(`${normalizedPath}${name}`)
-
-        let stream = new Readable()
-        stream._read = () => {
-          stream.push(data)
-          stream.push(null)
+        const response = {
+          Key: name,
+          ContentType: options.ContentType
         }
 
-        stream.on('error', err => reject(err))
-        writeStream.on('finish', () => resolve())
+        const writeStream = fs.createWriteStream(`${normalizedPath}${name}`)
         writeStream.on('error', err => reject(err))
-        stream.pipe(writeStream)
+        writeStream.on('finish', () => {
+          if (/^image\/.*/.test(options.ContentType)) {
+            if (options.isThumb) response.isThumb = true
+            response.width = options.meta.width
+            response.height = options.meta.height
+          }
+          return resolve(response)
+        })
+
+        if (data instanceof stream.Stream) {
+          data.pipe(writeStream)
+        } else {
+          let stream = new Readable()
+          stream._read = () => {
+            stream.push(data)
+            stream.push(null)
+          }
+          stream.on('error', err => reject(err))
+          stream.pipe(writeStream)
+        }
       })
     },
     download (name, options) {
