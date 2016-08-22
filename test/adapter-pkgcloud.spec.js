@@ -6,7 +6,7 @@ const expect = require('chai').expect
 const fs = require('fs')
 const cp = require('child_process')
 const rewire = require('rewire')
-let adapter = rewire('../adapter-pkgcloud')
+let adapter = rewire('../adapters/pkgcloud')
 
 const pkgcloud = {
   storage: {

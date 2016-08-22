@@ -3,7 +3,7 @@
 /* global describe, it, beforeEach, afterEach */
 
 const expect = require('chai').expect
-const adapter = require('../adapter-filesystem')
+const adapter = require('../adapters/filesystem')
 const fs = require('fs')
 const cp = require('child_process')
 

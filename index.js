@@ -3,6 +3,7 @@
 const R = require('ramda')
 const adapter = require('./adapter')
 const fileCache = require('./file-cache')
+const processAndUploadImage = require('./image-processing')
 
 module.exports = config => {
   const defaults = {
@@ -25,7 +26,13 @@ module.exports = config => {
   return {
     upload (name, data, options) {
       options = options || {}
-      return client.upload(name, data, options).then(cache.put(name, data))
+
+      if (!/^image\/.*/.test(options.ContentType)) {
+        return client.upload(name, data, options).then(cache.put(name, data))
+      } else {
+        const inputArgs = {name, data, options}
+        return processAndUploadImage(client, inputArgs, cache)
+      }
     },
     download (name, options) {
       options = options || {}

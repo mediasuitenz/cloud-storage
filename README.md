@@ -41,6 +41,10 @@ const config = {
 #### configuration options
 
 ##### pkgcloud providers
+
+**Warning:** Currently only actively developing for filesystem and AWS, some features may not be supported for pkgcloud providers.
+
+
 For pkgcloud providers see [pgkcloud storage](https://www.npmjs.com/package/pkgcloud#storage) for most options. In addition use key `container` to specify which cloud container to upload to. (For amazon this is a bucket)
 
 ##### filesystem provider
@@ -90,7 +94,64 @@ let promise = storage(config).download('my-file.png', {
 })
 ```
 
+### Image Processing
+
+Version 0.3.0 adds basic image processing, this feature currently adds thumbnail generation and limiting the size of saved images. See following example:
+```js
+const options = {
+  ContentType: 'image/png', // important only works when specified
+
+  maxSize: 1200,            // maximum size in pixels for x and y
+
+  thumbnails: [             // array of image sizes to be generated
+    {
+      label: '_small',      // will be appended to filename: my-file_small.png
+      height: 200,          // image size to generate, specifying only width or height will maintain aspect ratio
+      isThumb: true         // identifier flag for thumbnail, should only be set once
+    },
+    {
+      label: '_medium',
+      height: 600
+    }
+  ]
+}
+storage(config).upload('my-file.png', data, options)
+  .then(response => {
+    // response will be an array with an element for each size, see below
+  })
+  .catch(err => {
+    // handle any errors
+  })
+```
+
+**Example Response**
+```json
+[
+  {
+    "key": "my-file.png",
+    "ContentType": "image/png",
+    "width": 1200,
+    "height": 800
+  },
+  {
+    "key": "my-file_small.png",
+    "ContentType": "image/png",
+    "width": 300,
+    "height": 200,
+    "isThumb": true
+  },
+  {
+    "key": "my-file_medium.png",
+    "ContentType": "image/png",
+    "width": 900,
+    "height": 600
+  }
+]
+```
+
 ## Providers
+
+**Warning:** Currently only actively developing for filesystem and AWS, some features may not be supported for pkgcloud providers.
 
 Supports any providers supported by package cloud. See [pgkcloud storage](https://www.npmjs.com/package/pkgcloud#storage) for more details.
 - amazon

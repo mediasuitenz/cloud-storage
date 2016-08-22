@@ -8,5 +8,5 @@ module.exports.create = adapterConfig => {
   if (R.contains(type, pkgcloudTypes)) {
     type = 'pkgcloud'
   }
-  return require(`./adapter-${type}.js`)(adapterConfig)
+  return require(`./adapters/${type}.js`)(adapterConfig)
 }

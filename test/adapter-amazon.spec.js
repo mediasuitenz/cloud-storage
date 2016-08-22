@@ -6,13 +6,13 @@ const expect = require('chai').expect
 const fs = require('fs')
 const cp = require('child_process')
 const rewire = require('rewire')
-let adapter = rewire('../adapter-amazon')
+let adapter = rewire('../adapters/amazon')
 
 const AWS = {
   S3: function () {
     this.upload = (params, cb) => {
       fs.writeFileSync(`${__dirname}/files/${params.Key}`, params.Body)
-      cb(null, 'success')
+      cb(null, {key: params.Key})
     }
     this.getObject = (params, cb) => {
       cb(null, fs.createReadStream(`${__dirname}/files/${params.Key}`))
