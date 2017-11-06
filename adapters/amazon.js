@@ -20,9 +20,9 @@ module.exports = config => {
           Key: name,
           Body: data
         }
-        Object.keys(options).forEach(key => params[key] = options[key])
+        Object.keys(options).forEach(key => { params[key] = options[key] })
         client.upload(params, (err, res) => {
-          if (err) reject(err)
+          if (err) return reject(err)
 
           res.ContentType = options.ContentType
           if (/^image\/.*/.test(options.ContentType)) {
@@ -30,7 +30,7 @@ module.exports = config => {
             res.width = options.meta.width
             res.height = options.meta.height
           }
-          resolve(res)
+          return resolve(res)
         })
       })
     },
@@ -40,9 +40,9 @@ module.exports = config => {
       }
       return new Promise((resolve, reject) => {
         client.getObject(params, (err, res) => {
-          if (err) reject(err)
+          if (err) return reject(err)
 
-          resolve(res)
+          return resolve(res)
         })
       })
     },
@@ -54,9 +54,9 @@ module.exports = config => {
       }
       return new Promise((resolve, reject) => {
         client.getSignedUrl(operation, params, (err, url) => {
-          if (err) reject(err)
+          if (err) return reject(err)
 
-          resolve(url)
+          return resolve(url)
         })
       })
     }

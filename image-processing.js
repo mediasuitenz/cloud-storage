@@ -16,15 +16,16 @@ module.exports = (client, inputArgs, cache) => {
   const name = inputArgs.name
   const data = inputArgs.data
   const options = inputArgs.options
+  const setMeta = info => { options.meta = info }
   let originalData, fullsize
 
   if ((inputArgs.data instanceof stream.Stream)) {
     originalData = new stream.PassThrough()
     data.pipe(originalData)
-    fullsize = originalData.pipe(sharp().resize(options.maxSize, options.maxSize).max().withoutEnlargement().on('info', info => options.meta = info))
+    fullsize = originalData.pipe(sharp().resize(options.maxSize, options.maxSize).max().withoutEnlargement().on('info', setMeta))
   } else {
     originalData = data
-    fullsize = sharp(originalData).resize(options.maxSize, options.maxSize).max().withoutEnlargement().on('info', info => options.meta = info)
+    fullsize = sharp(originalData).resize(options.maxSize, options.maxSize).max().withoutEnlargement().on('info', setMeta)
   }
 
   const originalUpload = client.upload(name, fullsize, options).then(cache.put(name, data))
@@ -35,7 +36,7 @@ module.exports = (client, inputArgs, cache) => {
   if (options.thumbnails && Array.isArray(options.thumbnails)) {
     options.thumbnails.forEach(thumbOptions => {
       const thumbname = renameThumb(name, thumbOptions)
-      const addMeta = meta => versionOptions.meta = meta
+      const addMeta = meta => { versionOptions.meta = meta }
       const versionOptions = R.clone(options)
       versionOptions.isThumb = thumbOptions.isThumb
       let resizedData
