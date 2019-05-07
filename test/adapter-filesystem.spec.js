@@ -17,42 +17,30 @@ describe('filesystem adapter', () => {
     afterEach(() => {
       cp.execSync(`rm -rf ${__dirname}/files`)
     })
-    it('upload should successfully upload a file buffer', (done) => {
+    it('upload should successfully upload a file buffer', async () => {
       // given
-      let config = { provider: 'filesystem', path: `${__dirname}/files` }
-      let client = adapter(config)
+      const config = { provider: 'filesystem', path: `${__dirname}/files` }
+      const client = adapter(config)
 
       // when
-      let upload = client.upload('my-file.txt', new Buffer('asdasdasd'), {})
+      await client.upload('my-file.txt', Buffer.from('asdasdasd'), {})
 
       // then
-      upload.then(() => {
-        let file = fs.readFileSync(`${__dirname}/files/my-file.txt`, 'utf8')
-        expect(file).to.equal('asdasdasd')
-        done()
-      }).catch(() => {
-        expect(false).to.be.ok
-        done()
-      })
+      const file = fs.readFileSync(`${__dirname}/files/my-file.txt`, 'utf8')
+      expect(file).to.equal('asdasdasd')
     })
 
-    it('upload should successfully upload a file string', (done) => {
+    it('upload should successfully upload a file string', async () => {
       // given
-      let config = { provider: 'filesystem', path: `${__dirname}/files` }
-      let client = adapter(config)
+      const config = { provider: 'filesystem', path: `${__dirname}/files` }
+      const client = adapter(config)
 
       // when
-      let upload = client.upload('my-file.txt', 'asdasdasd', {})
+      await client.upload('my-file.txt', 'asdasdasd', {})
 
       // then
-      upload.then(() => {
-        let file = fs.readFileSync(`${__dirname}/files/my-file.txt`, 'utf8')
-        expect(file).to.equal('asdasdasd')
-        done()
-      }).catch(() => {
-        expect(false).to.be.ok
-        done()
-      })
+      const file = fs.readFileSync(`${__dirname}/files/my-file.txt`, 'utf8')
+      expect(file).to.equal('asdasdasd')
     })
   })
   describe('downloading a file', () => {
@@ -67,42 +55,36 @@ describe('filesystem adapter', () => {
     })
     it('download should successfully download a file', (done) => {
       // given
-      let config = { provider: 'filesystem', path: `${__dirname}/files` }
-      let client = adapter(config)
+      const config = { provider: 'filesystem', path: `${__dirname}/files` }
+      const client = adapter(config)
 
       // when
-      let download = client.download('my-file.txt', {})
+      const download = client.download('my-file.txt', {})
 
       // then
       download.then(fileStream => {
         let data = ''
-        fileStream.on('data', chunk => data += chunk)
+        fileStream.on('data', chunk => { data += chunk })
         fileStream.on('end', () => {
           expect(data).to.equal('asdasdasd\n')
           done()
         })
       }).catch(() => {
-        expect(false).to.be.ok
+        expect(false).to.be.ok()
         done()
       })
     })
 
-    it('setting type option to buffer should download whole file buffer', (done) => {
+    it('setting type option to buffer should download whole file buffer', async () => {
       // given
-      let config = { provider: 'filesystem', path: `${__dirname}/files` }
-      let client = adapter(config)
+      const config = { provider: 'filesystem', path: `${__dirname}/files` }
+      const client = adapter(config)
 
       // when
-      let download = client.download('my-file.txt', { type: 'buffer' })
+      const fileBuffer = await client.download('my-file.txt', { type: 'buffer' })
 
       // then
-      download.then(fileBuffer => {
-        expect(fileBuffer.toString()).to.equal('asdasdasd\n')
-        done()
-      }).catch(() => {
-        expect(false).to.be.ok
-        done()
-      })
+      expect(fileBuffer.toString()).to.equal('asdasdasd\n')
     })
   })
 })
