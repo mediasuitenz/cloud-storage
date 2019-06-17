@@ -17,7 +17,7 @@ module.exports = config => {
     }
   }
 
-  config = Object.assign(defaults, config)
+  config = Object.assign({}, defaults, config)
 
   const client = adapter.create(config.adapter)
   const cache = fileCache.create(config.cache)
