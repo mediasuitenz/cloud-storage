@@ -36,7 +36,7 @@ module.exports = config => {
 
         switch (options.type) {
           case 'buffer':
-            let data = new Buffer('')
+            let data = Buffer.from('')
             stream.on('data', chunk => { data = Buffer.concat([data, chunk]) })
             stream.on('end', () => resolve(data))
             stream.on('error', err => reject(err))

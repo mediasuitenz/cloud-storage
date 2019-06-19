@@ -1,6 +1,5 @@
 'use strict'
 
-const R = require('ramda')
 const adapter = require('./adapter')
 const fileCache = require('./file-cache')
 const processAndUploadImage = require('./image-processing')
@@ -18,7 +17,7 @@ module.exports = config => {
     }
   }
 
-  config = R.merge(defaults, config)
+  config = Object.assign({}, defaults, config)
 
   const client = adapter.create(config.adapter)
   const cache = fileCache.create(config.cache)
@@ -30,7 +29,7 @@ module.exports = config => {
       if (!/^image\/.*/.test(options.ContentType)) {
         return client.upload(name, data, options).then(cache.put(name, data))
       } else {
-        const inputArgs = {name, data, options}
+        const inputArgs = { name, data, options }
         return processAndUploadImage(client, inputArgs, cache)
       }
     },

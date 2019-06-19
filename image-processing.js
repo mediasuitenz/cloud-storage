@@ -1,5 +1,4 @@
 'use strict'
-const R = require('ramda')
 const stream = require('stream')
 const sharp = require('sharp')
 
@@ -37,7 +36,7 @@ module.exports = (client, inputArgs, cache) => {
     options.thumbnails.forEach(thumbOptions => {
       const thumbname = renameThumb(name, thumbOptions)
       const addMeta = meta => { versionOptions.meta = meta }
-      const versionOptions = R.clone(options)
+      const versionOptions = JSON.parse(JSON.stringify(options))
       versionOptions.isThumb = thumbOptions.isThumb
       let resizedData
 

@@ -17,28 +17,22 @@ describe('module integration tests', () => {
     afterEach(() => {
       cp.execSync(`rm -rf ${__dirname}/files`)
     })
-    it('should upload using filesystem adapter', (done) => {
+    it('should upload using filesystem adapter', async () => {
       // given
-      let config = {
+      const config = {
         adapter: {
           provider: 'filesystem',
           path: `${__dirname}/files`
         }
       }
-      let client = storage(config)
+      const client = storage(config)
 
       // when
-      let upload = client.upload('my-file.txt', new Buffer('asdasdasd'))
+      await client.upload('my-file.txt', Buffer.from('asdasdasd'))
 
       // then
-      upload.then(() => {
-        let file = fs.readFileSync(`${__dirname}/files/my-file.txt`, 'utf8')
-        expect(file).to.equal('asdasdasd')
-        done()
-      }).catch(() => {
-        expect(false).to.be.ok
-        done()
-      })
+      const file = fs.readFileSync(`${__dirname}/files/my-file.txt`, 'utf8')
+      expect(file).to.equal('asdasdasd')
     })
   })
   describe('downloading a file', () => {
@@ -53,27 +47,27 @@ describe('module integration tests', () => {
     })
     it('download using filesystem adapter', done => {
       // given
-      let config = {
+      const config = {
         adapter: {
           provider: 'filesystem',
           path: `${__dirname}/files`
         }
       }
-      let client = storage(config)
+      const client = storage(config)
 
       // when
-      let download = client.download('my-file.txt')
+      const download = client.download('my-file.txt')
 
       // then
       download.then(fileStream => {
         let data = ''
-        fileStream.on('data', chunk => data += chunk)
+        fileStream.on('data', chunk => { data += chunk })
         fileStream.on('end', () => {
           expect(data).to.equal('asdasdasd\n')
           done()
         })
       }).catch(() => {
-        expect(false).to.be.ok
+        expect(false).to.be.ok()
         done()
       })
     })
