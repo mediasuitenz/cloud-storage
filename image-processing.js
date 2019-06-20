@@ -16,15 +16,21 @@ module.exports = (client, inputArgs, cache) => {
   const data = inputArgs.data
   const options = inputArgs.options
   const setMeta = info => { options.meta = info }
+  const origOptions = {
+    width: options.maxSize,
+    height: options.maxSize,
+    withoutEnlargement: true,
+    fit: 'inside'
+  }
   let originalData, fullsize
 
   if ((inputArgs.data instanceof stream.Stream)) {
     originalData = new stream.PassThrough()
     data.pipe(originalData)
-    fullsize = originalData.pipe(sharp().resize(options.maxSize, options.maxSize).max().withoutEnlargement().on('info', setMeta))
+    fullsize = originalData.pipe(sharp().resize(origOptions).on('info', setMeta))
   } else {
     originalData = data
-    fullsize = sharp(originalData).resize(options.maxSize, options.maxSize).max().withoutEnlargement().on('info', setMeta)
+    fullsize = sharp(originalData).resize(origOptions).on('info', setMeta)
   }
 
   const originalUpload = client.upload(name, fullsize, options).then(cache.put(name, data))
@@ -37,15 +43,19 @@ module.exports = (client, inputArgs, cache) => {
       const thumbname = renameThumb(name, thumbOptions)
       const addMeta = meta => { versionOptions.meta = meta }
       const versionOptions = JSON.parse(JSON.stringify(options))
+      const resizeOptions = {
+        width: thumbOptions.width,
+        height: thumbOptions.height
+      }
       versionOptions.isThumb = thumbOptions.isThumb
       let resizedData
 
       if (data instanceof stream.Stream) {
         const dataCopy = new stream.PassThrough()
         data.pipe(dataCopy)
-        resizedData = dataCopy.pipe(sharp().resize(thumbOptions.width, thumbOptions.height).on('info', addMeta))
+        resizedData = dataCopy.pipe(sharp().resize(resizeOptions).on('info', addMeta))
       } else {
-        resizedData = sharp(data).resize(thumbOptions.width, thumbOptions.height).on('info', addMeta)
+        resizedData = sharp(data).resize(resizeOptions).on('info', addMeta)
       }
 
       const uploadPromise = client.upload(thumbname, resizedData, versionOptions).then(cache.put(thumbname, resizedData))
