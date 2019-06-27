@@ -39,6 +39,9 @@ module.exports = config => {
         Key: name
       }
       return new Promise((resolve, reject) => {
+        if (options.type === 'stream') {
+          return resolve(client.getObject(params).createReadStream())
+        }
         client.getObject(params, (err, res) => {
           if (err) return reject(err)
 
