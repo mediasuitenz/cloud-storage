@@ -3,18 +3,34 @@
 let AWS = require('aws-sdk')
 
 module.exports = config => {
-  const client = new AWS.S3({
-    accessKeyId: config.keyId,
-    secretAccessKey: config.key,
-    region: config.region,
-    params: {
-      Bucket: config.container
-    }
-  })
+  let client
+  if (config.keyId && config.key) {
+    // If we are provided with the AWS AccessKey and SecretAccessKey
+    client = new AWS.S3({
+      accessKeyId: config.keyId,
+      secretAccessKey: config.key,
+      region: config.region,
+      params: {
+        Bucket: config.container
+      }
+    })
+  } else {
+    // If we need to infer our identity from the environment
+    AWS.config.getCredentials(err => {
+      if (err) { console.error(err.stack) }
+    })
+
+    client = new AWS.S3({
+      region: config.region,
+      params: {
+        Bucket: config.container
+      }
+    })
+  }
 
   return {
     name: 'amazon',
-    upload (name, data, options) {
+    upload(name, data, options) {
       return new Promise((resolve, reject) => {
         let params = {
           Key: name,
@@ -34,7 +50,7 @@ module.exports = config => {
         })
       })
     },
-    download (name, options) {
+    download(name, options) {
       let params = {
         Key: name
       }
@@ -49,7 +65,7 @@ module.exports = config => {
         })
       })
     },
-    getUrl (name, options) {
+    getUrl(name, options) {
       options = options || {}
       let operation = options.operation || 'getObject'
       let params = {
