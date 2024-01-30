@@ -1,7 +1,7 @@
 {
   "name": "@mediasuite/cloud-storage",
   "description": "upload and download files from various providers",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "license": "MIT",
   "main": "index.js",
   "repository": {
@@ -48,7 +48,7 @@
   "dependencies": {
     "aws-sdk": "^2.450.0",
     "pkgcloud": "^2.1.0",
-    "sharp": "0.28.0"
+    "sharp": "0.28.3"
   },
   "devDependencies": {
     "chai": "^3.4.1",
