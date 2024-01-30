@@ -30,7 +30,7 @@ module.exports = config => {
 
   return {
     name: 'amazon',
-    upload(name, data, options) {
+    upload (name, data, options) {
       return new Promise((resolve, reject) => {
         let params = {
           Key: name,
@@ -50,7 +50,7 @@ module.exports = config => {
         })
       })
     },
-    download(name, options) {
+    download (name, options) {
       let params = {
         Key: name
       }
@@ -65,7 +65,7 @@ module.exports = config => {
         })
       })
     },
-    getUrl(name, options) {
+    getUrl (name, options) {
       options = options || {}
       let operation = options.operation || 'getObject'
       let params = {

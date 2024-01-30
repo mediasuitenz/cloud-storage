@@ -9,6 +9,11 @@ const rewire = require('rewire')
 const adapter = rewire('../adapters/amazon')
 
 const AWS = {
+  config: {
+    getCredentials: () => {
+      return true
+    }
+  },
   S3: function () {
     this.upload = (params, cb) => {
       fs.writeFileSync(`${__dirname}/files/${params.Key}`, params.Body)
