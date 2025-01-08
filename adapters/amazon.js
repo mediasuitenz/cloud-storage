@@ -68,7 +68,9 @@ module.exports = config => {
     getUrl (name, options) {
       options = options || {}
       let operation = options.operation || 'getObject'
-      let params = {
+      let params = options.params || {}
+      params = {
+        ...params,
         Key: name
       }
       return new Promise((resolve, reject) => {
