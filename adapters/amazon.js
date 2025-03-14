@@ -6,14 +6,19 @@ module.exports = config => {
   let client
   if (config.keyId && config.key) {
     // If we are provided with the AWS AccessKey and SecretAccessKey
-    client = new AWS.S3({
+    const s3Params = {
       accessKeyId: config.keyId,
       secretAccessKey: config.key,
       region: config.region,
       params: {
         Bucket: config.container
       }
-    })
+    }
+    // You can also specify an endpoint - for using a local s3 mimic
+    if (config.endpoint) {
+      s3Params.endpoint = config.endpoint
+    }
+    client = new AWS.S3(s3Params)
   } else {
     // If we need to infer our identity from the environment
     AWS.config.getCredentials(err => {
