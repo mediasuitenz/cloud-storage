@@ -22,8 +22,8 @@ describe('module integration tests', () => {
       const config = {
         adapter: {
           provider: 'filesystem',
-          path: `${__dirname}/files`
-        }
+          path: `${__dirname}/files`,
+        },
       }
       const client = storage(config)
 
@@ -45,13 +45,13 @@ describe('module integration tests', () => {
     afterEach(() => {
       cp.execSync(`rm -rf ${__dirname}/files`)
     })
-    it('download using filesystem adapter', done => {
+    it('download using filesystem adapter', (done) => {
       // given
       const config = {
         adapter: {
           provider: 'filesystem',
-          path: `${__dirname}/files`
-        }
+          path: `${__dirname}/files`,
+        },
       }
       const client = storage(config)
 
@@ -59,17 +59,21 @@ describe('module integration tests', () => {
       const download = client.download('my-file.txt')
 
       // then
-      download.then(fileStream => {
-        let data = ''
-        fileStream.on('data', chunk => { data += chunk })
-        fileStream.on('end', () => {
-          expect(data).to.equal('asdasdasd\n')
+      download
+        .then((fileStream) => {
+          let data = ''
+          fileStream.on('data', (chunk) => {
+            data += chunk
+          })
+          fileStream.on('end', () => {
+            expect(data).to.equal('asdasdasd\n')
+            done()
+          })
+        })
+        .catch(() => {
+          expect(false).to.be.ok()
           done()
         })
-      }).catch(() => {
-        expect(false).to.be.ok()
-        done()
-      })
     })
   })
 })

@@ -4,17 +4,17 @@ const adapter = require('./adapter')
 const fileCache = require('./file-cache')
 const processAndUploadImage = require('./image-processing')
 
-module.exports = config => {
+module.exports = (config) => {
   const defaults = {
     adapter: {
       provider: 'filesystem',
-      path: process.cwd()
+      path: process.cwd(),
     },
     cache: {
       ttl: '',
       enable: false,
-      path: ''
-    }
+      path: '',
+    },
   }
 
   config = Object.assign({}, defaults, config)
@@ -23,7 +23,7 @@ module.exports = config => {
   const cache = fileCache.create(config.cache)
 
   return {
-    upload (name, data, options) {
+    upload(name, data, options) {
       options = options || {}
 
       if (!/^image\/.*/.test(options.ContentType)) {
@@ -33,16 +33,17 @@ module.exports = config => {
         return processAndUploadImage(client, inputArgs, cache)
       }
     },
-    download (name, options) {
+    download(name, options) {
       options = options || {}
-      return cache.get(name, options)
-        .catch(() => client.download(name, options).then(data => {
+      return cache.get(name, options).catch(() =>
+        client.download(name, options).then((data) => {
           return cache.put(name, data).then(() => data)
-        }))
+        }),
+      )
     },
-    getUrl (name, options) {
+    getUrl(name, options) {
       options = options || {}
       return client.getUrl(name, options)
-    }
+    },
   }
 }

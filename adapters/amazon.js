@@ -1,90 +1,108 @@
 'use strict'
 
-let AWS = require('aws-sdk')
+const { S3Client, GetObjectCommand, PutObjectCommand } = require('@aws-sdk/client-s3')
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner')
 
-module.exports = config => {
-  let client
+module.exports = (config) => {
+  const s3Params = {
+    region: config.region,
+  }
+
   if (config.keyId && config.key) {
-    // If we are provided with the AWS AccessKey and SecretAccessKey
-    const s3Params = {
+    s3Params.credentials = {
       accessKeyId: config.keyId,
       secretAccessKey: config.key,
-      region: config.region,
-      params: {
-        Bucket: config.container
-      }
     }
-    // You can also specify an endpoint - for using a local s3 mimic
-    if (config.endpoint) {
-      s3Params.endpoint = config.endpoint
-    }
-    client = new AWS.S3(s3Params)
-  } else {
-    // If we need to infer our identity from the environment
-    AWS.config.getCredentials(err => {
-      if (err) { console.error(err.stack) }
-    })
-
-    client = new AWS.S3({
-      region: config.region,
-      params: {
-        Bucket: config.container
-      }
-    })
   }
+
+  // You can also specify an endpoint - for using a local s3 mimic
+  if (config.endpoint) {
+    s3Params.endpoint = config.endpoint
+  }
+
+  if (config.s3ForcePathStyle) {
+    s3Params.forcePathStyle = config.s3ForcePathStyle
+  }
+
+  const client = new S3Client(s3Params)
 
   return {
     name: 'amazon',
-    upload (name, data, options) {
-      return new Promise((resolve, reject) => {
-        let params = {
-          Key: name,
-          Body: data
-        }
-        Object.keys(options).forEach(key => { params[key] = options[key] })
-        client.upload(params, (err, res) => {
-          if (err) return reject(err)
-
-          res.ContentType = options.ContentType
-          if (/^image\/.*/.test(options.ContentType)) {
-            if (options.isThumb) res.isThumb = true
-            res.width = options.meta.width
-            res.height = options.meta.height
-          }
-          return resolve(res)
-        })
-      })
-    },
-    download (name, options) {
+    async upload(name, data, options) {
+      const allowedParams = [
+        'ACL',
+        'ChecksumAlgorithm',
+        'ContentDisposition',
+        'ContentLength',
+        'Metadata',
+        'ServerSideEncryption',
+        'StorageClass',
+      ]
       let params = {
-        Key: name
+        Key: name,
+        Body: data,
+        Bucket: config.container,
       }
-      return new Promise((resolve, reject) => {
-        if (options.type === 'stream') {
-          return resolve(client.getObject(params).createReadStream())
-        }
-        client.getObject(params, (err, res) => {
-          if (err) return reject(err)
 
-          return resolve(res)
+      Object.keys(options)
+        .filter((key) => allowedParams.includes(key))
+        .forEach((key) => {
+          params[key] = options[key]
         })
-      })
+
+      const command = new PutObjectCommand(params)
+
+      const res = await client.send(command)
+
+      res.ContentType = options.ContentType
+
+      if (/^image\/.*/.test(options.ContentType)) {
+        if (options.isThumb) res.isThumb = true
+        res.width = options?.meta?.width
+        res.height = options?.meta?.height
+      }
+
+      return res
     },
-    getUrl (name, options) {
+    async download(name, options) {
+      let params = {
+        Key: name,
+        Bucket: config.container,
+      }
+
+      const command = new GetObjectCommand(params)
+      const res = await client.send(command)
+
+      if (options.type === 'stream') {
+        return res.Body
+      } else {
+        const chunks = []
+        for await (const chunk of res.Body) chunks.push(chunk)
+        return Buffer.concat(chunks)
+      }
+    },
+    async getUrl(name, options) {
       options = options || {}
-      let operation = options.operation || 'getObject'
+      const expiresIn = options?.expiresIn || 3600
+      const commandType = options?.command
       let params = options.params || {}
+      let command
       params = {
         ...params,
-        Key: name
+        Bucket: config.container,
+        Key: name,
       }
-      return new Promise((resolve, reject) => {
-        client.getSignedUrl(operation, params, (err, url) => {
-          if (err) return reject(err)
-
-          return resolve(url)
-        })
-      })
-    }
+      switch (commandType) {
+        case 'PUT':
+          command = new PutObjectCommand(params)
+          break
+        case 'GET':
+        default:
+          command = new GetObjectCommand(params)
+          break
+      }
+      const preSignedUrl = await getSignedUrl(client, command, { expiresIn })
+      return preSignedUrl
+    },
   }
 }

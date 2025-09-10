@@ -62,17 +62,21 @@ describe('filesystem adapter', () => {
       const download = client.download('my-file.txt', {})
 
       // then
-      download.then(fileStream => {
-        let data = ''
-        fileStream.on('data', chunk => { data += chunk })
-        fileStream.on('end', () => {
-          expect(data).to.equal('asdasdasd\n')
+      download
+        .then((fileStream) => {
+          let data = ''
+          fileStream.on('data', (chunk) => {
+            data += chunk
+          })
+          fileStream.on('end', () => {
+            expect(data).to.equal('asdasdasd\n')
+            done()
+          })
+        })
+        .catch(() => {
+          expect(false).to.be.ok()
           done()
         })
-      }).catch(() => {
-        expect(false).to.be.ok()
-        done()
-      })
     })
 
     it('setting type option to buffer should download whole file buffer', async () => {

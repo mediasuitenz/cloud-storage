@@ -1,7 +1,7 @@
 # cloud-storage
 
 Upload and download files from various providers.
-The goal of this module is provide a simple file
+The goal of this module is to provide a simple file
 upload and download abstraction allowing for the
 possibility of switching out the provider at any
 time without breaking existing code.
@@ -21,11 +21,13 @@ npm install @mediasuite/cloud-storage --save
 ## Usage
 
 ### require module
+
 ```js
 const storage = require('@mediasuite/cloud-storage')
 ```
 
 ### setup configuration
+
 ```js
 const config = {
   adapter: {
@@ -33,21 +35,15 @@ const config = {
     keyId: '', // access key id
     key: '', // secret key
     region: '', // amazon region
-    container: '' // s3 bucket
-  }
+    container: '', // s3 bucket
+  },
 }
 ```
 
 #### configuration options
 
-##### pkgcloud providers
-
-**Warning:** Currently only actively developing for filesystem and AWS, some features may not be supported for pkgcloud providers.
-
-
-For pkgcloud providers see [pgkcloud storage](https://www.npmjs.com/package/pkgcloud#storage) for most options. In addition use key `container` to specify which cloud container to upload to. (For amazon this is a bucket)
-
 ##### filesystem provider
+
 ```js
 {
   adapter: {
@@ -58,24 +54,28 @@ For pkgcloud providers see [pgkcloud storage](https://www.npmjs.com/package/pkgc
 ```
 
 ### upload a file
+
 ```js
-storage(config).upload('my-file.png', data)
+storage(config)
+  .upload('my-file.png', data)
   .then(() => {
     // do something
   })
-  .catch(err => {
+  .catch((err) => {
     // handle any errors
   })
 ```
 
 ### download a file
+
 ```js
-storage(config).download('my-file.png')
-  .then(fileStream => {
+storage(config)
+  .download('my-file.png')
+  .then((fileStream) => {
     // do something with fileStream
     // eg. in an express route -> fileStream.pipe(res)
   })
-  .catch(err => {
+  .catch((err) => {
     // handle error
     // eg. in express you might do
     //   res.type('application/json')
@@ -85,46 +85,49 @@ storage(config).download('my-file.png')
 
 #### download options
 
-By default the download promise will resolve with a stream object. If you would
-prefer, you can instead get back a full buffer of the file like so:
+By default, the download promise will resolve with a stream object. If preferred, you can instead get back a full buffer of the file like so:
 
 ```js
 let promise = storage(config).download('my-file.png', {
-  type: 'buffer'
+  type: 'buffer',
 })
 ```
 
 ### Image Processing
 
 Version 0.3.0 adds basic image processing, this feature currently adds thumbnail generation and limiting the size of saved images. See following example:
+
 ```js
 const options = {
   ContentType: 'image/png', // important only works when specified
 
-  maxSize: 1200,            // maximum size in pixels for x and y
+  maxSize: 1200, // maximum size in pixels for x and y
 
-  thumbnails: [             // array of image sizes to be generated
+  thumbnails: [
+    // array of image sizes to be generated
     {
-      label: '_small',      // will be appended to filename: my-file_small.png
-      height: 200,          // image size to generate, specifying only width or height will maintain aspect ratio
-      isThumb: true         // identifier flag for thumbnail, should only be set once
+      label: '_small', // will be appended to filename: my-file_small.png
+      height: 200, // image size to generate, specifying only width or height will maintain aspect ratio
+      isThumb: true, // identifier flag for thumbnail, should only be set once
     },
     {
       label: '_medium',
-      height: 600
-    }
-  ]
+      height: 600,
+    },
+  ],
 }
-storage(config).upload('my-file.png', data, options)
-  .then(response => {
+storage(config)
+  .upload('my-file.png', data, options)
+  .then((response) => {
     // response will be an array with an element for each size, see below
   })
-  .catch(err => {
+  .catch((err) => {
     // handle any errors
   })
 ```
 
 **Example Response**
+
 ```json
 [
   {
@@ -154,6 +157,7 @@ storage(config).upload('my-file.png', data, options)
 **Warning:** Currently only actively developing for filesystem and AWS, some features may not be supported for pkgcloud providers.
 
 Supports any providers supported by package cloud. See [pgkcloud storage](https://www.npmjs.com/package/pkgcloud#storage) for more details.
+
 - amazon
 - azure
 - hp
@@ -162,4 +166,5 @@ Supports any providers supported by package cloud. See [pgkcloud storage](https:
 - google
 
 In addition supports local filestorage
+
 - filesystem

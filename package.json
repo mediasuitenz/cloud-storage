@@ -18,13 +18,10 @@
     "url": "https://madecurious.com/"
   },
   "engines": {
-    "node": ">=8.11.0"
+    "node": ">=18"
   },
   "scripts": {
-    "lint": "standard --verbose | snazzy",
-    "pretest": "npm run lint",
     "test:ci": "mocha -R spec test",
-    "test:dev": "testem .",
     "test": "npm run test:ci",
     "prepublish": "npm test && npm prune",
     "preversion:patch": "npm run test",
@@ -38,24 +35,17 @@
     "registry": "https://registry.npmjs.org",
     "access": "public"
   },
-  "keywords": [
-    "cloud",
-    "storage",
-    "files",
-    "upload",
-    "download"
-  ],
+  "keywords": ["cloud", "storage", "files", "upload", "download"],
   "dependencies": {
-    "aws-sdk": "^2.450.0",
+    "@aws-sdk/client-s3": "^3.887.0",
+    "@aws-sdk/s3-request-presigner": "^3.887.0",
     "sharp": "^0.30.7"
   },
   "devDependencies": {
     "chai": "^3.4.1",
     "mocha": "^6.1.4",
+    "prettier": "^3.6.2",
     "rewire": "^2.5.1",
-    "snazzy": "^8.0.0",
-    "standard": "^12.0.1",
-    "testem": "^2.15.1",
     "xyz": "^3.0.0"
   }
 }
