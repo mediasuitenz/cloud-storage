@@ -3,35 +3,33 @@
 let AWS = require('aws-sdk')
 
 module.exports = config => {
-  let client
+  const s3Params = {
+    region: config.region,
+    params: {
+      Bucket: config.container
+    }
+  }
+
   if (config.keyId && config.key) {
     // If we are provided with the AWS AccessKey and SecretAccessKey
-    const s3Params = {
-      accessKeyId: config.keyId,
-      secretAccessKey: config.key,
-      region: config.region,
-      params: {
-        Bucket: config.container
-      }
-    }
-    // You can also specify an endpoint - for using a local s3 mimic
-    if (config.endpoint) {
-      s3Params.endpoint = config.endpoint
-    }
-    client = new AWS.S3(s3Params)
+    s3Params.accessKeyId = config.keyId
+    s3Params.secretAccessKey = config.key
   } else {
     // If we need to infer our identity from the environment
-    AWS.config.getCredentials(err => {
-      if (err) { console.error(err.stack) }
-    })
-
-    client = new AWS.S3({
-      region: config.region,
-      params: {
-        Bucket: config.container
-      }
+    AWS.config.getCredentials((err) => {
+      if (err) throw err
     })
   }
+
+  if (config.endpoint) {
+    s3Params.endpoint = config.endpoint
+  }
+
+  if (config.s3ForcePathStyle) {
+    s3Params.s3ForcePathStyle = config.s3ForcePathStyle
+  }
+
+  const client = new AWS.S3(s3Params)
 
   return {
     name: 'amazon',
