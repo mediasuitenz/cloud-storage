@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "chai": "^3.4.1",
-    "mocha": "^6.1.4",
+    "mocha": "^11.8.0",
     "prettier": "^3.6.2",
     "rewire": "^2.5.1",
     "xyz": "^3.0.0"
