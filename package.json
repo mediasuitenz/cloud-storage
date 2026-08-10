@@ -1,12 +1,12 @@
 {
   "name": "@mediasuite/cloud-storage",
   "description": "upload and download files from various providers",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "license": "MIT",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mediasuitenz/cloud-storage.git"
+    "url": "git+https://github.com/mediasuitenz/cloud-storage.git"
   },
   "bugs": {
     "url": "https://github.com/mediasuitenz/cloud-storage/issues"
