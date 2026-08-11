@@ -11,58 +11,46 @@ const renameThumb = (name, options) => {
   return `${filename}${label}${dotExtension}`
 }
 
+const toBuffer = async (source) => {
+  const chunks = []
+  for await (const chunk of source) chunks.push(chunk)
+  return Buffer.concat(chunks)
+}
+
 module.exports = async (client, inputArgs, cache) => {
   const name = inputArgs.name
-  const data = inputArgs.data
   const options = inputArgs.options
-  const setMeta = (info) => {
-    options.meta = info
-  }
-  const origOptions = {
-    width: options.maxSize,
-    height: options.maxSize,
-    withoutEnlargement: true,
-    fit: 'inside',
-  }
-  let originalData, fullsize
+  // Consume the source once up front: this function awaits between uploads and a
+  // stream cannot be piped again once it has been drained.
+  const data = inputArgs.data instanceof stream.Stream ? await toBuffer(inputArgs.data) : inputArgs.data
 
-  if (inputArgs.data instanceof stream.Stream) {
-    originalData = new stream.PassThrough()
-    data.pipe(originalData)
-    fullsize = await originalData.pipe(sharp().resize(origOptions).on('info', setMeta)).toBuffer()
-  } else {
-    originalData = data
-    fullsize = await sharp(originalData).resize(origOptions).on('info', setMeta).toBuffer()
+  // Uploads must resolve to the adapter response so callers can record the
+  // key and dimensions of each version.
+  const upload = (key, body, uploadOptions) =>
+    client.upload(key, body, uploadOptions).then((res) => cache.put(key, body).then(() => res))
+
+  const resize = async (resizeOptions, uploadOptions) => {
+    // sharp only emits 'info' in stream mode, so read the dimensions off toBuffer.
+    const { data: resized, info } = await sharp(data).resize(resizeOptions).toBuffer({ resolveWithObject: true })
+    uploadOptions.meta = info
+    return resized
   }
 
-  const originalUpload = client.upload(name, fullsize, options).then(() => cache.put(name, data))
-  const uploads = [originalUpload]
+  const fullsize = await resize(
+    { width: options.maxSize, height: options.maxSize, withoutEnlargement: true, fit: 'inside' },
+    options,
+  )
 
-  // add check for mimetype before trying to do image processing
+  const uploads = [upload(name, fullsize, options)]
 
   if (options.thumbnails && Array.isArray(options.thumbnails)) {
     const thumbnailPromises = options.thumbnails.map(async (thumbOptions) => {
-      const thumbname = renameThumb(name, thumbOptions)
-      const addMeta = (meta) => {
-        versionOptions.meta = meta
-      }
       const versionOptions = JSON.parse(JSON.stringify(options))
-      const resizeOptions = {
-        width: thumbOptions.width,
-        height: thumbOptions.height,
-      }
       versionOptions.isThumb = thumbOptions.isThumb
-      let resizedData
 
-      if (data instanceof stream.Stream) {
-        const dataCopy = new stream.PassThrough()
-        data.pipe(dataCopy)
-        resizedData = await dataCopy.pipe(sharp().resize(resizeOptions).on('info', addMeta)).toBuffer()
-      } else {
-        resizedData = await sharp(data).resize(resizeOptions).on('info', addMeta).toBuffer()
-      }
+      const resizedData = await resize({ width: thumbOptions.width, height: thumbOptions.height }, versionOptions)
 
-      return client.upload(thumbname, resizedData, versionOptions).then(() => cache.put(thumbname, resizedData))
+      return upload(renameThumb(name, thumbOptions), resizedData, versionOptions)
     })
     uploads.push(...(await Promise.all(thumbnailPromises)))
   }
