@@ -1,7 +1,9 @@
 'use strict'
 
+const { Stream } = require('stream')
 const { S3Client, GetObjectCommand, PutObjectCommand } = require('@aws-sdk/client-s3')
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner')
+const { Upload } = require('@aws-sdk/lib-storage')
 
 module.exports = (config) => {
   const s3Params = {
@@ -50,9 +52,13 @@ module.exports = (config) => {
           params[key] = options[key]
         })
 
-      const command = new PutObjectCommand(params)
-
-      const res = await client.send(command)
+      // PutObjectCommand cannot sign a stream of unknown length, so streams are
+      // uploaded via lib-storage's Upload (the v3 equivalent of the v2 SDK's
+      // ManagedUpload) which splits them into multipart chunks as they arrive.
+      const res =
+        params.Body instanceof Stream
+          ? await new Upload({ client, params }).done()
+          : await client.send(new PutObjectCommand(params))
 
       res.ContentType = options.ContentType
 
