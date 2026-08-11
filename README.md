@@ -168,3 +168,20 @@ Supports any providers supported by package cloud. See [pgkcloud storage](https:
 In addition supports local filestorage
 
 - filesystem
+
+## Testing
+
+```sh
+npm test
+```
+
+The amazon adapter tests talk to a real S3 API, because the failures they guard against happen inside the AWS SDK rather than in this package. They are skipped unless `S3_TEST_ENDPOINT` is set, so point it at a local S3 mimic to run them:
+
+```sh
+docker run --rm -p 4566:4566 localstack/localstack
+aws --endpoint-url http://localhost:4566 s3 mb s3://cloud-storage-test
+
+S3_TEST_ENDPOINT=http://localhost:4566 npm test
+```
+
+`S3_TEST_BUCKET`, `S3_TEST_REGION`, `S3_TEST_KEY_ID` and `S3_TEST_KEY` override the bucket, region and credentials used.
