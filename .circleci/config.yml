@@ -6,7 +6,7 @@ orbs:
 jobs:
   generate-sbom:
     docker:
-      - image: cimg/base:current
+      - image: cimg/base:current@sha256:e133b1e03b06cafa4a66dbe6bdb350e6ed7133729b1a4f812635b82c6e1e5389
     steps:
       - checkout
       - trivy/scan:
